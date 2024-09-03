@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\CartController;
 
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
@@ -40,3 +41,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::delete('/products/{id}', [ProductController::class, 'destroy']);
 });
 
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('carts', [CartController::class, 'index']);
+    Route::get('carts/{id}', [CartController::class, 'show']);
+    Route::get('carts/user/{userId}', [CartController::class, 'getByUserId']);
+    Route::post('carts', [CartController::class, 'store']);
+    Route::put('carts/{id}', [CartController::class, 'update']);
+    Route::delete('carts/{id}', [CartController::class, 'destroy']);
+});

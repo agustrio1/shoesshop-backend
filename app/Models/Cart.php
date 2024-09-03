@@ -4,8 +4,30 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Notifications\Notifiable;
 
 class Cart extends Model
 {
-    use HasFactory;
+    use HasFactory , HasApiTokens, Notifiable;
+
+
+
+    protected $fillable = [
+        'user_id',
+        'product_id',
+        'quantity',
+        'price',
+    ];
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
 }

@@ -51,53 +51,36 @@ class ProductController extends Controller
         return new ProductResource($product);
     }
 
-    public function update(Request $request, $id)
-{
-    $this->authorizeAdmin();
+  public function update(Request $request, $id)
+    {
+        $this->authorizeAdmin();
 
-    Log::info('Update function accessed with ID: ' . $id);
+        $product = Product::findOrFail($id);
 
-    // Fetch the product or fail with a 404 error if not found
-    $product = Product::findOrFail($id);
+        // Validasi data
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'price' => 'required|numeric',
+            'stock' => 'required|integer',
+            'category_id' => 'required|exists:categories,id',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
 
-    // Validate incoming request data
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'description' => 'nullable|string',
-        'price' => 'required|numeric',
-        'stock' => 'required|integer',
-        'category_id' => 'required|exists:categories,id',
-        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-    ]);
+        // Update data produk
+        $product->update($request->all());
 
-    // Handle image upload if a new image is provided
-    if ($request->hasFile('image')) {
-        // Delete the old image if it exists
-        if ($product->image) {
-            Storage::disk('public')->delete($product->image);
+        // Simpan image jika ada
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('products', 'public');
+            $product->update(['image' => $imagePath]);
         }
-        // Store the new image
-        $imagePath = $request->file('image')->store('products', 'public');
-    } else {
-        // Keep the existing image if no new image is provided
-        $imagePath = $product->image;
+
+        return response()->json([
+            'message' => 'Produk berhasil diperbarui',
+            'product' => $product
+        ], 200);
     }
-
-    // Update the product with the validated data
-    $product->update([
-        'name' => $request->name,
-        'slug' => Str::slug($request->name),
-        'description' => $request->description,
-        'price' => $request->price,
-        'stock' => $request->stock,
-        'category_id' => $request->category_id,
-        'image' => $imagePath,
-    ]);
-
-    // Return the updated product as a resource
-    return new ProductResource($product);
-}
-
 
 
 
